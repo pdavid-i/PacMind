@@ -1,6 +1,8 @@
+import Pacman from "./Pacman.js";
+
 export default class Board {
   constructor(tileSize) {
-    this.titleSize = tileSize;
+    this.tileSize = tileSize;
 
     this.smallDot = new Image();
     this.smallDot.src = "../resources/images/yellowDot.png";
@@ -11,14 +13,15 @@ export default class Board {
 
   map = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1],
+    [1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1],
+    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1],
+    [1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1],
+    [1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1],
+    [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],
+    [1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
   ];
@@ -37,27 +40,44 @@ export default class Board {
   }
 
   setCanvasSize(canvas) {
-    canvas.width = this.map[0].length * this.titleSize;
-    canvas.height = this.map.length * this.titleSize;
+    canvas.width = this.map[0].length * this.tileSize;
+    canvas.height = this.map.length * this.tileSize;
   }
 
   #drawWall(ctx, column, row) {
     ctx.drawImage(
       this.wall,
-      column * this.titleSize,
-      row * this.titleSize,
-      this.titleSize,
-      this.titleSize
+      column * this.tileSize,
+      row * this.tileSize,
+      this.tileSize,
+      this.tileSize
     );
   }
 
   #drawSmallDot(ctx, column, row) {
     ctx.drawImage(
       this.smallDot,
-      column * this.titleSize,
-      row * this.titleSize,
-      this.titleSize,
-      this.titleSize
+      column * this.tileSize,
+      row * this.tileSize,
+      this.tileSize,
+      this.tileSize
     );
+  }
+
+  getPacman(velocity) {
+    for (let row = 0; row < this.map.length; row++) {
+      for (let column = 0; column < this.map[0].length; column++) {
+        let tile = this.map[row][column];
+        if (tile === 4) {
+          this.map[row][column] = 0;
+          return new Pacman(
+            row * this.tileSize,
+            row * this.tileSize,
+            this.tileSize,
+            velocity
+          );
+        }
+      }
+    }
   }
 }
