@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pac-Mind</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=VT323&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- The Modal -->
+    <div id="myModal" class="modal">
+      <!-- Modal content -->
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <br />
+        <br />
+        <br />
+        <p id="info">
+          You can pick out one of the finest avatars of this realm:
+        </p>
+        <div id="buttonWrapper">
+          <div class="avatarWrapper">
+            <button class="avatarChoice" id="avatarDave"></button>
+            <p>Dave</p>
+          </div>
+          <div class="avatarWrapper">
+            <button class="avatarChoice" id="avatarKerry"></button>
+            <p>Kerry</p>
+          </div>
+          <div class="avatarWrapper">
+            <button class="avatarChoice" id="avatarRebe"></button>
+            <p>Rebe</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="textContainer">
+      <p>breathe deeper</p>
+      <p>sǝlɔʎɔ ǝɥʇ ʞɐǝɹq</p>
+      <p>smile 做你自己</p>
+    </div>
+    <div>
+      <h1>As You Move Through The World</h1>
+      <canvas id="gameCanvas"></canvas>
+      <div id="buttonWrapper">
+        <button id="startButton"></button>
+      </div>
+    </div>
+
+    <script src="src/Game.js" type="module"></script>
+  </body>
+</html>

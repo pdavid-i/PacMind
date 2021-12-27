@@ -1,42 +1,92 @@
-import Direction from "./Direction.js";
+import MovingDirection from "./MovingDirection.js";
+
 export default class Pacman {
-  constructor(x, y, tileSize, velocity, map) {
+  constructor(x, y, tileSize, velocity, tileMap, character) {
     this.x = x;
     this.y = y;
     this.tileSize = tileSize;
     this.velocity = velocity;
-    this.map = map;
-    this.#loadPacmanImages();
+    this.tileMap = tileMap;
 
-    this.currentDirection = null;
-    this.requestedDirection = null;
+    this.currentMovingDirection = null;
+    this.requestedMovingDirection = null;
+
+    this.pacmanAnimationTimerDefault = 10;
+    this.pacmanAnimationTimer = null;
+
+    this.pacmanRotation = this.Rotation.right;
+    this.wakaSound = new Audio("sounds/waka.wav");
+
+    this.powerDotSound = new Audio("sounds/aphex_dot.wav");
+    this.powerDotActive = false;
+    this.powerDotAboutToExpire = false;
+    this.timers = [];
+
+    this.eatGhostSound = new Audio("sounds/eat_ghost.wav");
+
+    this.madeFirstMove = false;
 
     document.addEventListener("keydown", this.#keydown);
+
+    this.#loadPacmanImages(character);
   }
 
-  draw(ctx) {
+  Rotation = {
+    right: 2,
+    down: 3,
+    left: 0,
+    up: 1,
+  };
+
+  draw(ctx, pause, enemies) {
+    if (!pause) {
+      this.#move();
+      this.#animate();
+    }
+    this.#eatDot();
+    this.#eatPowerDot();
+    this.#eatGhost(enemies);
+
+    const size = this.tileSize / 2;
+
+    ctx.save();
+    ctx.translate(this.x + size, this.y + size);
+    ctx.rotate((this.pacmanRotation * 90 * Math.PI) / 180);
+    if (this.pacmanRotation === 2) {
+      ctx.translate(size, 0);
+      ctx.scale(1, -1);
+    }
     ctx.drawImage(
       this.pacmanImages[this.pacmanImageIndex],
-      this.x,
-      this.y,
+      -size,
+      -size,
       this.tileSize,
       this.tileSize
     );
-    this.#move();
+
+    ctx.restore();
+
+    // ctx.drawImage(
+    //   this.pacmanImages[this.pacmanImageIndex],
+    //   this.x,
+    //   this.y,
+    //   this.tileSize,
+    //   this.tileSize
+    // );
   }
 
-  #loadPacmanImages() {
+  #loadPacmanImages(character) {
     const pacmanImage1 = new Image();
-    pacmanImage1.src = "resources/images/pac0.png";
+    pacmanImage1.src = `images/${character}0.gif`;
 
     const pacmanImage2 = new Image();
-    pacmanImage2.src = "resources/images/pac1.png";
+    pacmanImage2.src = `images/${character}1.gif`;
 
     const pacmanImage3 = new Image();
-    pacmanImage3.src = "resources/images/pac2.png";
+    pacmanImage3.src = `images/${character}2.gif`;
 
     const pacmanImage4 = new Image();
-    pacmanImage4.src = "resources/images/pac1.png";
+    pacmanImage4.src = `images/${character}1.gif`;
 
     this.pacmanImages = [
       pacmanImage1,
@@ -49,52 +99,139 @@ export default class Pacman {
   }
 
   #keydown = (event) => {
-    if (event.keyCode === 38 || event.keyCode === 87) {
-      if (this.currentDirection == Direction.down)
-        this.currentDirection = Direction.up;
-      this.requestedDirection = Direction.up;
+    //up
+    if (event.keyCode == 38) {
+      if (this.currentMovingDirection == MovingDirection.down)
+        this.currentMovingDirection = MovingDirection.up;
+      this.requestedMovingDirection = MovingDirection.up;
       this.madeFirstMove = true;
-    } else if (event.keyCode === 40 || event.keyCode === 83) {
-      if (this.currentDirection == Direction.up)
-        this.currentDirection = Direction.down;
-      this.requestedDirection = Direction.down;
+    }
+    //down
+    if (event.keyCode == 40) {
+      if (this.currentMovingDirection == MovingDirection.up)
+        this.currentMovingDirection = MovingDirection.down;
+      this.requestedMovingDirection = MovingDirection.down;
       this.madeFirstMove = true;
-    } else if (event.keyCode === 37 || event.keyCode === 65) {
-      if (this.currentDirection == Direction.right)
-        this.currentDirection = Direction.left;
-      this.requestedDirection = Direction.left;
+    }
+    //left
+    if (event.keyCode == 37) {
+      if (this.currentMovingDirection == MovingDirection.right)
+        this.currentMovingDirection = MovingDirection.left;
+      this.requestedMovingDirection = MovingDirection.left;
       this.madeFirstMove = true;
-    } else if (event.keyCode === 39 || event.keyCode === 68) {
-      if (this.currentDirection == Direction.left)
-        this.currentDirection = Direction.right;
-      this.requestedDirection = Direction.right;
+    }
+    //right
+    if (event.keyCode == 39) {
+      if (this.currentMovingDirection == MovingDirection.left)
+        this.currentMovingDirection = MovingDirection.right;
+      this.requestedMovingDirection = MovingDirection.right;
       this.madeFirstMove = true;
     }
   };
 
   #move() {
-    if (this.currentDirection !== this.requestedDirection) {
+    if (this.currentMovingDirection !== this.requestedMovingDirection) {
       if (
         Number.isInteger(this.x / this.tileSize) &&
         Number.isInteger(this.y / this.tileSize)
       ) {
-        this.currentDirection = this.requestedDirection;
+        if (
+          !this.tileMap.didCollideWithEnvironment(
+            this.x,
+            this.y,
+            this.requestedMovingDirection
+          )
+        )
+          this.currentMovingDirection = this.requestedMovingDirection;
       }
     }
 
-    switch (this.currentDirection) {
-      case Direction.up:
+    if (
+      this.tileMap.didCollideWithEnvironment(
+        this.x,
+        this.y,
+        this.currentMovingDirection
+      )
+    ) {
+      this.pacmanAnimationTimer = null;
+      this.pacmanImageIndex = 1;
+      return;
+    } else if (
+      this.currentMovingDirection != null &&
+      this.pacmanAnimationTimer == null
+    ) {
+      this.pacmanAnimationTimer = this.pacmanAnimationTimerDefault;
+    }
+
+    switch (this.currentMovingDirection) {
+      case MovingDirection.up:
         this.y -= this.velocity;
+        this.pacmanRotation = this.Rotation.up;
         break;
-      case Direction.down:
+      case MovingDirection.down:
         this.y += this.velocity;
+        this.pacmanRotation = this.Rotation.down;
         break;
-      case Direction.left:
+      case MovingDirection.left:
         this.x -= this.velocity;
+        this.pacmanRotation = this.Rotation.left;
         break;
-      case Direction.right:
+      case MovingDirection.right:
         this.x += this.velocity;
+        this.pacmanRotation = this.Rotation.right;
         break;
+    }
+  }
+
+  #animate() {
+    if (this.pacmanAnimationTimer == null) {
+      return;
+    }
+    this.pacmanAnimationTimer--;
+    if (this.pacmanAnimationTimer == 0) {
+      this.pacmanAnimationTimer = this.pacmanAnimationTimerDefault;
+      this.pacmanImageIndex++;
+      if (this.pacmanImageIndex == this.pacmanImages.length)
+        this.pacmanImageIndex = 0;
+    }
+  }
+
+  #eatDot() {
+    if (this.tileMap.eatDot(this.x, this.y) && this.madeFirstMove) {
+      this.wakaSound.play();
+    }
+  }
+
+  #eatPowerDot() {
+    if (this.tileMap.eatPowerDot(this.x, this.y)) {
+      this.powerDotSound.play();
+      this.powerDotActive = true;
+      this.powerDotAboutToExpire = false;
+      this.timers.forEach((timer) => clearTimeout(timer));
+      this.timers = [];
+
+      let powerDotTimer = setTimeout(() => {
+        this.powerDotActive = false;
+        this.powerDotAboutToExpire = false;
+      }, 1000 * 6);
+
+      this.timers.push(powerDotTimer);
+
+      let powerDotAboutToExpireTimer = setTimeout(() => {
+        this.powerDotAboutToExpire = true;
+      }, 1000 * 3);
+
+      this.timers.push(powerDotAboutToExpireTimer);
+    }
+  }
+
+  #eatGhost(enemies) {
+    if (this.powerDotActive) {
+      const collideEnemies = enemies.filter((enemy) => enemy.collideWith(this));
+      collideEnemies.forEach((enemy) => {
+        enemies.splice(enemies.indexOf(enemy), 1);
+        this.eatGhostSound.play();
+      });
     }
   }
 }

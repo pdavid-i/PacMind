@@ -1,17 +1,24 @@
-h1 {
-  color: palevioletred;
-  text-align: center;
-  font-family: Arial, Helvetica, sans-serif;
+#gameCanvas {
+  box-shadow: 10px 10px 20px black;
+  display: none;
 }
 
-#gameCanvas {
-  box-shadow: 10px 10px 20px blue;
-  padding-left: 0;
-  padding-right: 0;
-  margin-left: auto;
-  margin-right: auto;
-  display: block;
-  width: 800px;
+p {
+  font-family: "VT323";
+}
+
+h1 {
+  text-align: center;
+  color: lightgrey;
+  font-family: "VT323";
+}
+
+#textContainer {
+  margin-top: 600px;
+  margin-left: -200px;
+}
+#textContainer p {
+  color: white;
 }
 
 body {
@@ -21,7 +28,88 @@ body {
   height: 100vh;
   background: linear-gradient(
     0deg,
-    rgb(19, 168, 194) 30%,
-    rgb(99, 240, 230) 100%
+    rgb(17, 51, 161) 0%,
+    rgb(136, 34, 195) 100%
   );
+}
+
+#buttonWrapper {
+  text-align: center;
+  min-height: 150px;
+}
+
+#startButton {
+  background: url("./images/oroubouros.gif") no-repeat;
+  cursor: pointer;
+  width: 120px;
+  height: 120px;
+  border: none;
+}
+
+.avatarChoice {
+  width: 64px;
+  height: 64px;
+  margin: 0px 30px 0px 30px;
+  border: none;
+  cursor: pointer;
+}
+
+#info {
+  color: white;
+  padding-bottom: 25px;
+  padding-left: 10px;
+  font-size: 30px;
+}
+
+#avatarKerry {
+  background: url("./images/kerry_avatar_large.gif") no-repeat;
+}
+
+#avatarDave {
+  background: url("./images/dave_avatar_large.gif") no-repeat;
+}
+
+#avatarRebe {
+  background: url("./images/rebe_avatar_large.gif") no-repeat;
+}
+
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0, 0, 0); /* Fallback color */
+  background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+}
+
+/* Modal Content/Box */
+.modal-content {
+  background-color: #7bebf3;
+  margin: 15% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 40%; /* Could be more or less, depending on screen size */
+}
+
+.avatarWrapper {
+  float: left;
+  min-height: 200px;
+}
+/* The Close Button */
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
 }
